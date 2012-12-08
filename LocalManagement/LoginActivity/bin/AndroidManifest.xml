@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.itsfire"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="16" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.example.itsfire.LoginActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.example.itsfire.ClientActivity"
+            android:label="@string/title_activity_client" >
+        </activity>
+        <activity
+            android:name="com.example.itsfire.CompteActivity"
+            android:label="@string/title_activity_compte" >
+        </activity>
+        <activity
+            android:name="com.example.itsfire.KeywordsActivity"
+            android:label="@string/title_activity_keywords" >
+        </activity>
+        <activity
+            android:name="com.example.itsfire.AlertesActivity"
+            android:label="@string/title_activity_alertes" >
+        </activity>
+        <activity
+            android:name="com.example.itsfire.TeestActivity"
+            android:label="@string/title_activity_teest" >
+             <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
