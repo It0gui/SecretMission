@@ -1,0 +1,25 @@
+#!/bin/bash
+function test_()
+{
+	echo "--->"`date` >> log
+	nbr_conf=`./fonction_mails -get_nbr_mails_conf`
+	nbr_serv=`./fonction_mails -get_nbr_mails_server`
+	 if(( $nbr_serv>$nbr_conf ))
+	  then
+		 for(( i=nbr_conf+1 ; i<=nbr_serv ; i++))
+		  do
+			echo "Testing email num $i.." >> log
+			./fonction_mails -test_mail $i >> log
+		  done
+		 echo "Done!" >> log
+		./fonction_mails -set_nbr_mails_conf $nbr_serv
+	  else
+	    echo "Nothing to signal!" >> log
+	  fi
+}
+
+while true;
+do
+  sleep 60
+  test_
+done
