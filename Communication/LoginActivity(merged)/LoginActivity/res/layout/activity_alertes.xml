@@ -1,0 +1,61 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"    
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="40dp"
+    android:paddingRight="40dp"
+    android:paddingTop="40dp"
+    android:paddingBottom="40dp"
+    android:orientation="vertical"
+    tools:context=".AlertesActivity"
+     >
+				<TextView
+				    android:id="@+id/textView1"
+				    android:layout_width="match_parent"
+				    android:layout_height="51dp"
+				    android:text="Notifications List :"
+				    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+		        <ListView
+		            android:id="@+id/listeNotes"
+		            android:layout_width="250dp"
+		            android:layout_height="170dp"
+		            android:choiceMode="singleChoice"
+		             />
+		        <LinearLayout
+			    xmlns:android="http://schemas.android.com/apk/res/android"
+			    xmlns:tools="http://schemas.android.com/tools"
+			    android:layout_width="243dp"
+			    android:layout_height="wrap_content"
+			    android:orientation="horizontal"
+			    android:paddingTop="10dp" >
+			    
+			         <Button
+			             android:id="@+id/button1"
+			             android:layout_width="244dp"
+			             android:layout_height="wrap_content"
+			             android:layout_gravity="top"
+			             
+			             android:onClick="viewNotification"
+			             android:text="View" />
+					
+				</LinearLayout>
+				<LinearLayout
+			    xmlns:android="http://schemas.android.com/apk/res/android"
+			    xmlns:tools="http://schemas.android.com/tools"
+			    android:layout_width="243dp"
+			    android:layout_height="wrap_content"
+			    android:orientation="horizontal"
+			    >
+			    
+			         <Button
+			             android:id="@+id/button2"
+			             android:layout_width="244dp"
+			             android:layout_height="wrap_content"
+			             android:layout_gravity="top"
+			             
+			             android:onClick="removeNotification"
+			             android:text="Remove" />
+					
+				</LinearLayout>
+</LinearLayout>
