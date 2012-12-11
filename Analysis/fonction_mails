@@ -1,0 +1,236 @@
+#!/bin/bash
+path='/var/mail/elotro'
+
+
+function get_nbr_mails()
+{
+ grep "Delivered-To: test.if26@gmail.com" $path|wc -l
+}
+
+function get_subject_mail()
+{
+ pattern='Subject: '
+ grep "^$pattern*" $path | head -$1 | tail -1 |sed -e "s/$pattern//"
+}
+
+function get_boundary()
+{
+ pattern='Content-Type: multipart/alternative; boundary='
+ grep "^$pattern*" $path | head -$1 | tail -1 |sed -e "s/Content-Type: multipart\/alternative; boundary=//"
+}
+
+function get_ligne_start_msg()
+{
+ boundary=`get_boundary $1`
+ ligne=`grep -n "^--$boundary$" $path| awk -F: '{print $1}' | head -1`
+ ((ligne=$ligne+3))
+ echo $ligne
+}
+
+function get_ligne_end_msg()
+{
+ boundary=`get_boundary $1`
+ ligne=`grep -n "^--$boundary$" $path| awk -F: '{print $1}' | tail -1`
+ ((ligne=$ligne-2))
+ echo $ligne
+}
+
+function get_body_mail()
+{
+ start=`get_ligne_start_msg $1`
+ end=`get_ligne_end_msg $1`
+ ((size=$end-$start+1))
+ head -$end $path | tail -$size
+}
+
+function affiche_mail()
+{
+nbr_mails=`get_nbr_mails`
+echo "Vous avez $nbr_mails :"
+for(( i=1 ; i<=nbr_mails ; i++))
+ do
+  echo $i")"`get_subject_mail $i`"-->"`get_body_mail $i`
+ done
+}
+
+function get_nbr_mails_conf()
+{
+ grep "nbr_mails" conf| awk -F: '{print $2}'
+}
+
+function set_nbr_mails_conf()
+{
+ 	ligne2=`grep "key_words" conf` 
+ 	echo "nbr_mails:$1" > conf
+ 	echo $ligne2 >> conf
+}
+function add_key_word()
+{
+ cdt=`find_key_word $1`
+ if(( $cdt==0 ))
+  then 
+ 	ligne1=`grep "nbr_mails" conf`
+ 	ligne2=`grep "key_words" conf` 
+ 	echo $ligne1 > conf
+ 	echo $ligne2""$1";" >> conf
+	echo ">>>Key word added : $1" >> log
+ fi
+}
+
+function find_key_word()
+{
+ ligne=`grep "key_words" conf`
+ echo $ligne | grep "[:;]$1;" | wc -l
+}
+
+function nbr_key_word()
+{
+ ligne=`grep "key_words" conf`
+ echo $ligne | tr -d -c ";" | wc -c
+}
+
+function remove_key_word()
+{
+ cdt=`find_key_word $1`
+ if(( $cdt==1 ))
+  then 
+	ligne1=`grep "nbr_mails" conf`
+	ligne2=`grep "key_words" conf` 
+	echo $ligne1 > conf
+	echo $ligne2 | grep "key_words" | sed -e "s/$1;//" >> conf
+	echo ">>>Key word removed : $1" >> log
+ fi
+}
+
+function test_key_word_subject()
+{
+ get_subject_mail $1 | grep "^$2$" | wc -l  
+}
+function test_key_words_subject()
+{
+ ligne=`grep "key_words" conf`
+ ligne=`echo $ligne |  sed -e "s/key_words://"`
+ count=`nbr_key_word`
+ for(( i=1 ; i<=count ; i++))
+  do
+ 	key_word=`echo $ligne | cut -d ';' -f $i`
+	test=`test_key_word_subject $1 $key_word`
+	 if(( $test==1 ))
+	  then
+		echo "sa mash avec >$key_word<"
+         fi
+  done
+}
+
+function test_key_word_body()
+{
+ get_body_mail $1 | grep "^$2$" | wc -l  
+}
+
+function test_key_words_body()
+{
+ ligne=`grep "key_words" conf`
+ ligne=`echo $ligne |  sed -e "s/key_words://"`
+ count=`nbr_key_word`
+ for(( i=1 ; i<=count ; i++))
+  do
+ 	key_word=`echo $ligne | cut -d ';' -f $i`
+	test=`test_key_word_body $1 $key_word`
+	 if(( $test==1 ))
+	  then
+		echo "sa mash avec >$key_word<"
+         fi
+  done
+}
+
+function get_key_words()
+{
+ ligne=`grep "key_words" conf`
+ ligne=`echo $ligne |  sed -e "s/key_words://"`
+ count=`nbr_key_word`
+ result=''
+ for(( i=1 ; i<=count ; i++))
+  do
+	if(( $i == 1 ))
+	 then
+		result=$result'{ "keywords": ['
+	else
+		result=$result','
+	fi 
+ 	key_word=`echo $ligne | cut -d ';' -f $i`
+	result=$result'{ "keyword":"'$key_word'" }'
+  done
+  result=$result'] }'
+  echo $result;
+}
+
+function test_authentification()
+{
+	rm -rf tmp
+	fetchmail >> tmp 2>&1
+	etat=`cat tmp | grep '(AUTHFAIL)' | wc -l`
+	if(( $etat == 1 ))
+	 then
+		echo "{etat:ko}"
+	else
+		echo "{etat:ok}"
+	fi
+	
+}
+
+function set_login()
+{
+	ligne='poll imap.gmail.com with proto IMAP user '$1' there with password '$2' is "elotro" here options keep stripcr ssl sslcertck sslcertpath "/etc/ssl/certs"'
+	chemin='/home/elotro/.fetchmailrc'
+	sed -i '8d' $chemin
+	echo $ligne >> $chemin
+	echo ">>>New Login : $1 password : $2" >> log
+
+}
+
+case $1 in
+	-test_authentification ) test_authentification;; 	
+	-set_login ) set_login $2 $3;;
+
+	-get_nbr_mails_server ) get_nbr_mails;;
+	-get_nbr_mails_conf ) get_nbr_mails_conf;;	
+
+
+	-get_all_mails ) affiche_mail;;
+	-get_subject ) get_subject_mail $2;;
+	-get_body ) get_body_mail $2;;
+	-get_mail ) echo "Subject : "`get_subject_mail $2`
+		    echo "Body : "`get_body_mail $2`;;
+
+
+	-add_key_word ) add_key_word $2;;
+	-remove_key_word ) remove_key_word $2;;
+	-get_key_words ) get_key_words ;;
+	-set_nbr_mails_conf ) set_nbr_mails_conf $2;;	
+
+	-test_subject ) test_key_words_subject $2;;
+	-test_body ) test_key_words_body $2;;
+	-test_mail ) test_key_words_subject $2
+		     test_key_words_body $2;;
+	* )       echo "Bad Param!";;
+esac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

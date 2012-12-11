@@ -1,0 +1,19 @@
+#!/bin/bash
+case $1 in
+	-start ) sudo /etc/init.d/fetchmail restart
+		 ./checker & 
+		;;
+	-stop ) count=`ps | grep "sleep$" | wc -l`
+		if(( count!=0 ))
+		 then
+			kill -9 `ps | grep "sleep$" | awk '{print $1}'` 
+		fi
+		count=`ps | grep "checker$" | wc -l`
+		if(( count!=0 ))
+		 then
+			kill -9 `ps | grep "checker$" | awk '{print $1}'`
+		fi
+		sudo /etc/init.d/fetchmail stop;;
+	* ) echo "Bad Param!";;
+esac
+		 
