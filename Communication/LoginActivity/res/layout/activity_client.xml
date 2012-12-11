@@ -1,0 +1,89 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"    
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:paddingLeft="40dp"
+    android:paddingRight="40dp"
+    android:paddingTop="40dp"
+    android:paddingBottom="40dp"
+    android:orientation="vertical"
+    tools:context=".ClientActivity"
+     >
+
+
+
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    xmlns:tools="http://schemas.android.com/tools"    
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:paddingLeft="40dp"
+		    android:paddingRight="40dp"
+		    android:paddingTop="10dp"
+		    android:paddingBottom="10dp"
+			android:orientation="horizontal"
+	     >
+			    	    <Button
+				        android:id="@+id/button1"
+				        android:layout_width="fill_parent"
+				        android:layout_height="fill_parent"
+				        android:onClick="gestCompte"
+				        android:layout_gravity="top"
+				        android:text="@string/gestion_du_compte" />
+		</LinearLayout>
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    xmlns:tools="http://schemas.android.com/tools"    
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:paddingLeft="40dp"
+		    android:paddingRight="40dp"
+		    android:paddingTop="10dp"
+		    android:paddingBottom="10dp"
+			android:orientation="horizontal"
+	     >
+			    	    <Button
+				        android:id="@+id/button2"
+				        android:layout_width="fill_parent"
+				        android:layout_height="fill_parent"
+				        android:onClick="gestKeywords"
+				        android:layout_gravity="top"
+				        android:text="@string/gestion_des_keywords" />
+		</LinearLayout>
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    xmlns:tools="http://schemas.android.com/tools"    
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:paddingLeft="40dp"
+		    android:paddingRight="40dp"
+		    android:paddingTop="10dp"
+		    android:paddingBottom="10dp"
+			android:orientation="horizontal"
+	     >
+			    	    <Button
+				        android:id="@+id/button3"
+				        android:layout_width="fill_parent"
+				        android:layout_height="fill_parent"
+				        android:onClick="viewAlertes"
+				        android:layout_gravity="top"
+				        android:text="Voir Les alertes !" />
+		</LinearLayout>
+
+				<LinearLayout
+				    xmlns:android="http://schemas.android.com/apk/res/android"
+				    xmlns:tools="http://schemas.android.com/tools"
+				    android:layout_width="wrap_content"
+				    android:layout_height="wrap_content"
+				    android:orientation="horizontal"
+				    android:paddingBottom="20dp"
+				    android:paddingLeft="40dp"
+				    android:paddingRight="30dp"
+				    android:paddingTop="20dp" >
+
+						 <Button
+				        android:id="@+id/button4"
+				        android:layout_width="fill_parent"
+				        android:layout_height="fill_parent"
+				        android:onClick="viewEtat"
+				        android:layout_gravity="center_vertical"
+				        android:text="Etat du Service !" />
+		</LinearLayout>
+</LinearLayout>

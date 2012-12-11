@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">itsFire</string>
+    <string name="hello_world">Projet IF26</string>
+    <string name="menu_settings">Settings</string>
+    <string name="titre">Projet IF26</string>
+    <string name="txt_ip">IP :</string>
+    <string name="txt_login">Login :</string>
+    <string name="txt_pwd">Password :</string>
+    <string name="title_activity_client">ClientActivity</string>
+    <string name="go_">GO !</string>
+    <string name="gestion_du_compte">Gestion du Compte</string>
+    <string name="title_activity_compte">CompteActivity</string>
+    <string name="title_activity_keywords">KeywordsActivity</string>
+    <string name="title_activity_alertes">AlertesActivity</string>
+    <string name="gestion_des_keywords">Gestion des Keywords</string>
+    <string name="etat_">Etat du Service :</string>
+    <string name="todo">TODO</string>
+    <string name="title_activity_teest">TeestActivity</string>
+    <string name="title_activity_main">MainActivity</string>
+
+</resources>
