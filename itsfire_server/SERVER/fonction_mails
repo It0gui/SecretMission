@@ -1,0 +1,328 @@
+#!/bin/bash
+path='/var/mail/elotro'
+path_conf='/var/www/PROJET_IF26/SERVER/conf'
+path_log='/var/www/PROJET_IF26/SERVER/log'
+
+
+function get_nbr_mails()
+{
+ grep "Delivered-To: $1" $path|wc -l
+}
+
+function get_nbr_mails_conf()
+{
+ grep "nbr_mails_"$1 $path_conf| awk -F: '{print $2}'
+}
+
+function set_nbr_mails_conf()
+{
+ sed -i -e "s/nbr_mails_$1:.*/nbr_mails_$1:$2/g" $path_conf	
+}
+
+# get_nbr_mails test.if26@gmail.com
+
+
+#--------------------------------------------------------------->>>
+function get_boundary()
+{
+ start=`get_start_of_an_email $1 $2`
+ pattern='Content-Type: multipart/alternative; boundary='
+ nbr_ligne=`cat $path|wc -l`
+ (( nbr_ligne = $nbr_ligne-$start))
+ echo `cat $path | tail -$nbr_ligne  | grep "^$pattern*" | head -1 | tail -1 |sed -e "s/Content-Type: multipart\/alternative; boundary=//"`
+}
+
+#entrée email+n
+function get_start_of_an_email()
+{
+ ligne=`grep -n "Delivered-To: $1" $path | head -$2 | tail -1 | cut -d: -f1`
+ ((ligne=$ligne-1))
+ echo $ligne
+}
+
+#entrées mail+n
+function get_end_of_an_email()
+{
+ boundary=`get_boundary $1 $2`
+ ligne=`grep -n "\-\-$boundary\-\-" $path | head -1 | tail -1 | cut -d: -f1`
+ echo $ligne
+}
+
+
+function get_email_brut()
+{
+ a=`get_end_of_an_email $1 $2`
+ b=`get_start_of_an_email $1 $2`
+ ((c=$a-$b+1))
+ cat $path | head -$a | tail -$c
+}
+
+#get_email_brut ilyass.togui@gmail.com 2
+
+
+function get_subject_mail()
+{
+ get_email_brut $1 $2 | grep "Subject:" | cut -d: -f2
+}
+
+#From elotro  Sat Dec 22 19:40:27 2012
+#Date: Sat, 22 Dec 2012 19:39:26 +0100
+
+function get_body_mail()
+{
+ boundary=`get_boundary $1 $2`
+ ligne1=`grep -n "^--$boundary$" $path| awk -F: '{print $1}' | head -1`
+ ((ligne1=$ligne1+3))
+ ligne2=`grep -n "^--$boundary$" $path| awk -F: '{print $1}' | tail -1`
+ ((ligne2=$ligne2-2))
+ ((size=$ligne2-$ligne1+1))
+ head -$ligne2 $path | tail -$size
+}
+
+function get_date_mail()
+{
+ get_email_brut $1 $2 | head -1 | grep "From elotro " | sed -e "s/From elotro //"
+ get_email_brut $1 $2 | head -1 | grep "Date: " | sed -e "s/Date: //"
+}
+#get_date_mail test.if26@gmail.com 1
+
+
+
+#-------------------------------------------------------------------->>>
+
+
+
+function find_key_word()
+{
+ ligne=`grep "key_words_$1" $path_conf`
+ echo $ligne | grep "[:;]$2;" | wc -l
+}
+
+function nbr_key_word()
+{
+ ligne=`grep "key_words_$1" $path_conf`
+ echo $ligne | tr -d -c ";" | wc -c
+}
+
+function get_key_words()
+{
+ ligne=`grep "key_words_$1" $path_conf`
+ ligne=`echo $ligne |  sed -e "s/key_words_$1://"`
+ count=`nbr_key_word $1`
+ result=''
+ if(( $count == 0 ))
+  then
+	result='{ "keywords": [] }'
+  else
+	 for(( i=1 ; i<=count ; i++))
+	  do
+		if(( $i == 1 ))
+		 then
+			result=$result'{ "keywords": ['
+		else
+			result=$result','
+		fi 
+	 	key_word=`echo $ligne | cut -d ';' -f $i`
+		result=$result'{ "keyword":"'$key_word'" }'
+	  done
+	  result=$result'] }'
+   fi
+   echo $result;
+}
+
+function add_key_word()
+{
+ cdt=`find_key_word $1 $2`
+ if(( $cdt==0 ))
+  then 
+	ligne=`grep "key_words_$1" $path_conf`
+	sed -i -e "s/key_words_$1:.*/$ligne$2;/g" $path_conf
+	echo `date`"[Keywords] $1 added $2" >> $path_log
+ fi
+}
+
+
+function remove_key_word()
+{
+ cdt=`find_key_word $1 $2`
+ if(( $cdt==1 ))
+  then 
+	ligne=`grep "key_words_$1" $path_conf |  sed -e "s/$2;//"`
+	sed -i -e "s/key_words_$1:.*/$ligne/g" $path_conf
+	echo `date`"[Keywords] $1 removed $2" >> $path_log
+ fi
+}
+
+
+
+#---------------------------------------------------------------------->>
+
+function test_key_word_subject()
+{
+ text=`get_subject_mail $1 $2`
+ count=`echo $text | grep " $3 " | wc -l` 
+ ((count=$count+`echo $text | grep " $3" | wc -l`))  
+ ((count=$count+`echo $text | grep "$3 " | wc -l`))
+ ((count=$count+`echo $text | grep "^$3$" | wc -l`))
+ echo $count
+}
+
+function test_key_words_subject()
+{
+ ligne=`grep "key_words_$1" $path_conf`
+ ligne=`echo $ligne |  sed -e "s/key_words_$1://"`
+ count=`nbr_key_word $1 $2`
+ for(( i=1 ; i<=count ; i++))
+  do
+ 	key_word=`echo $ligne | cut -d ';' -f $i`
+	test=`test_key_word_subject $1 $2 $key_word`
+	 if(( $test>0 ))
+	  then
+		echo $key_word
+         fi
+  done
+}
+#test_key_words_subject test.if26@gmail.com 1
+
+function test_key_word_body()
+{
+ text=`get_body_mail $1 $2`
+ count=`echo $text | grep "$3" | wc -l` 
+ ((count=$count+`echo $text | grep " $3" | wc -l`))  
+ ((count=$count+`echo $text | grep "$3 " | wc -l`))
+((count=$count+`echo $text | grep "^$3$" | wc -l`))
+ echo $count
+}
+
+function test_key_words_body()
+{
+ ligne=`grep "key_words_$1" $path_conf`
+ ligne=`echo $ligne |  sed -e "s/key_words_$1://"`
+ count=`nbr_key_word $1 $2`
+ for(( i=1 ; i<=count ; i++))
+  do
+	
+ 	key_word=`echo $ligne | cut -d ';' -f $i`
+	test=`test_key_word_body $1 $2 $key_word`
+	 if(( $test>0 ))
+	  then
+		echo $key_word
+         fi
+  done
+}
+
+#----------------------------------------------------------->>>
+function test_authentification()
+{
+	rm -rf tmp
+	chemin='/home/elotro/.fetchmailrc'
+	fetchmail >> tmp 2>&1
+	etat1=`cat tmp | grep '(AUTHFAIL)' | wc -l`
+	etat2=`cat tmp | grep "$1" | wc -l`
+	etat3=`cat $chemin | grep " $1 " | wc -l`
+	if(( $etat3 == 1 ))
+	 then
+		if(( $etat1 == 1 ))
+		 then
+			if (( $etat2 == 1 ))
+			 then 
+				echo "{etat:ko}"
+			else
+				echo "{etat:ok}"
+			fi
+		else
+			echo "{etat:ok}"
+		fi
+	else
+		echo "{etat:err}"
+		#account not found
+	fi
+	
+}
+
+function alter_login()
+{
+	chemin='/home/elotro/.fetchmailrc'			
+	etat=`cat $chemin | grep " $1 " | wc -l`
+	if(( $etat == 1 ))
+		then 
+			sed -i -e "s/user $1 there with password .* is /user $1 there with password $2 is /g" $chemin	
+			echo "`date`[login] $1 altered his pwd" >> $path_log
+			echo "{etat:ok}"
+		else
+			echo "{etat:ko}"
+	fi
+	
+}
+
+function add_login()
+{
+	chemin='/home/elotro/.fetchmailrc'	
+	path_conf='/var/www/PROJET_IF26/SERVER/conf'	
+	path_log='/var/www/PROJET_IF26/SERVER/log'	
+	etat=`cat $chemin | grep " $1 " | wc -l`
+	if(( $etat == 0 ))
+		then 
+			chaine='poll imap.gmail.com with proto IMAP user '$1' there with password '$2' is "elotro" here options keep stripcr ssl sslcertck sslcertpath "/etc/ssl/certs" mda "/usr/bin/procmail -d %T"'
+			echo $chaine >> $chemin
+			echo "nbr_mails_$1:0" >> $path_conf
+			echo "key_words_$1:" >> $path_conf
+			echo `date`"[login] new login $1" >> $path_log
+			echo "{etat:ok}"
+		else
+			echo "{etat:ko}"
+	fi
+	
+}
+
+
+
+#-------------------------------------------------------------->>>
+
+
+
+case $1 in
+	#fonction de login
+	-test_authentification ) test_authentification $2;; 	
+	-alter_login ) alter_login $2 $3;;
+	-add_login ) add_login $2 $3;;
+	#fonction qui gere le nombre de mails
+	-get_nbr_mails_server ) get_nbr_mails $2;;
+	-get_nbr_mails_conf ) get_nbr_mails_conf $2;;	
+	-set_nbr_mails_conf ) set_nbr_mails_conf $2 $3;;	
+	#fonction traitement mails
+	-get_mail_brut ) get_email_brut $2 $3;;
+	-get_subject ) get_subject_mail $2 $3;;
+	-get_body ) get_body_mail $2 $3;;
+	-get_date ) get_date_mail $2 $3;;
+	#fonction keywords
+	-add_key_word ) add_key_word $2 $3;;
+	-remove_key_word ) remove_key_word $2 $3;;
+	-get_key_words ) get_key_words $2;;
+	#Fonction verifictation
+	-test_subject ) test_key_words_subject $2 $3;;
+	-test_body ) test_key_words_body $2 $3;;
+	-test_mail ) test_key_words_subject $2 $3
+		     test_key_words_body $2 $3;;
+	* )       echo "Bad Param!";;
+esac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

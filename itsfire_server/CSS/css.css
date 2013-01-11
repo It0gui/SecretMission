@@ -1,0 +1,85 @@
+			#wrapper 
+			{
+				width:980px;
+				margin: 0 auto 0 auto;
+			}
+
+#main {
+	float:left;
+	width:75%;
+	margin: 0 0 50px 0;
+	}
+
+#sidebar {
+	float:left;
+	width:22%;
+	margin-left:1%;
+	margin-top:1em;
+		}
+
+footer {
+	clear:both;
+	background-color:#777;
+border-radius:20px;
+box-shadow:
+0px 2px 2px 0px rgba(0, 0, 0, 0.5),
+0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset; 
+
+  -webkit-animation-name: pulse;
+  -webkit-animation-duration: 2s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-in-out;
+  -webkit-animation-direction: alternate;
+
+		}
+
+
+
+article {
+	border:1px dashed #444;
+	margin:1em;
+	padding:1em;
+	background:#fff;
+}
+
+article h2 {
+	margin-top: 1em;
+}
+
+article header, article footer {
+	border:1px dashed #ccc;
+	padding:1em;
+	background:#ddd;
+}
+
+aside {
+	border:1px dashed #444;
+}
+header {
+background-color:#777;
+border-radius:20px;
+box-shadow:
+0px 2px 2px 0px rgba(0, 0, 0, 0.5),
+0px 2px 2px 0px rgba(255, 255, 255, 0.5) inset; 
+}
+article aside {
+	background:#fff;
+	margin:1em 3em;
+	padding:0.5em;
+	border:1px dashed #ccc;
+}
+
+#map_canvas { width: 100%; height: 100% }
+
+
+@-webkit-keyframes pulse {
+ from {
+   opacity: 0.0;
+   font-size: 100%;
+ }
+ to {
+   opacity: 1.0;
+   font-size: 200%;
+ }
+}
+

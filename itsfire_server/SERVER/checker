@@ -1,0 +1,61 @@
+#!/bin/bash
+path='/var/mail/elotro'
+path_log='/var/www/PROJET_IF26/SERVER/log'
+path_conf='/var/www/PROJET_IF26/SERVER/conf'
+function test_()
+{
+	echo "[Test begin :"`date`"]" >> $path_log
+	nbr_account=` grep "nbr_mails_" $path_conf|wc -l`
+	for(( j=1 ; j<=nbr_account ; j++))
+	 do
+		account=`get_account $j`
+		nbr_conf=`./fonction_mails -get_nbr_mails_conf $account`
+		nbr_serv=`./fonction_mails -get_nbr_mails_server $account`
+		 if(( $nbr_serv>$nbr_conf ))
+		  then
+			 for(( i=nbr_conf+1 ; i<=nbr_serv ; i++))
+			  do
+				echo "......Testing Email num $i pour $account" >> $path_log
+				data=`./fonction_mails -test_mail $account $i`
+				if [ -n "$data" ]
+				 then
+					set $data
+					while (($#)) 
+					 do
+					       alerter $account $i $1 
+					       shift
+					 done
+				fi
+			  done
+			./fonction_mails -set_nbr_mails_conf $account $nbr_serv
+		  else
+		    echo "......RAS" >> $path_log
+		  fi
+	 done
+	echo "[Test end :"`date`"]" >> $path_log
+}
+
+function get_account()
+{
+ ((nbr=$1*2))
+ chaine=`cat $path_conf|head -$nbr|tail -1|awk -F: '{print $1}'`
+ echo $chaine|awk -F_ '{print $3}'
+}
+function alerter()
+{
+ subject=`./fonction_mails -get_subject $1 $2`
+ data='{"subject":"'$subject'","keyword":"'$3'"}'
+ data=`echo $data | sed -e "s/ /#/g" `
+ result=`php ../sender.php $1 $data`
+ tmp=`echo $result | grep '"success":1' | wc -l `
+ echo `date`"[ALERTE]" $1 "etat : $tmp" >> $path_log
+}
+
+
+
+while true;
+do
+  fetchmail 2> /dev/null 1> /dev/null
+  test_
+  sleep 10
+done

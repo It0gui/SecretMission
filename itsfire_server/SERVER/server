@@ -1,0 +1,20 @@
+#!/bin/bash
+path_log='/var/www/PROJET_IF26/SERVER/log'
+case $1 in
+	-start ) echo "[SERVER STARTED AT :"`date`"]" >> $path_log
+		 ./checker & 
+		;;
+	-stop ) count=`ps | grep "sleep$" | wc -l`
+		if(( count!=0 ))
+		 then
+			kill -9 `ps | grep "sleep$" | awk '{print $1}'` 
+		fi
+		count=`ps | grep "checker$" | wc -l`
+		if(( count!=0 ))
+		 then
+			kill -9 `ps | grep "checker$" | awk '{print $1}'`
+		fi
+		echo "[SERVER STOPPED AT :"`date`"]" >> $path_log;;
+	* ) echo "Bad Param!";;
+esac
+		 
